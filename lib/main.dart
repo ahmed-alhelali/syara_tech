@@ -1,10 +1,18 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
+import 'package:sayara_tech_app/app/constants/constants_log.dart';
+import 'package:sayara_tech_app/app/providers/internet_connection_provider.dart';
+import 'package:sayara_tech_app/app/service/ui_services.dart';
+import 'package:sayara_tech_app/app/widgets/snack_bar_widgets.dart';
 import 'package:sayara_tech_app/config/config.dart';
 import 'package:sayara_tech_app/app/pages/logged_in_pages/navigation_bar_page.dart';
 import 'package:sayara_tech_app/app/state/providers/user_token_provider.dart';
 import 'package:sayara_tech_app/app/theme/sayara_tech_theme.dart';
 import 'package:sayara_tech_app/app/pages/unlogged_in_pages/registration_page.dart';
+import 'dart:developer' as devtools;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

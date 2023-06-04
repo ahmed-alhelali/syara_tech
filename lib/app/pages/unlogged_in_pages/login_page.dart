@@ -8,6 +8,7 @@ import 'package:sayara_tech_app/app/constants/constants_assets.dart';
 import 'package:sayara_tech_app/app/constants/constants_log.dart';
 import 'package:sayara_tech_app/app/pages/unlogged_in_pages/login_otp_page.dart';
 import 'package:sayara_tech_app/app/pages/unlogged_in_pages/registration_page.dart';
+import 'package:sayara_tech_app/app/providers/internet_connection_provider.dart';
 import 'package:sayara_tech_app/app/providers/loading_notifier_provider.dart';
 import 'package:sayara_tech_app/app/service/ui_services.dart';
 import 'package:sayara_tech_app/app/widgets/text_style.dart';
@@ -132,6 +133,9 @@ class LoginPage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                     child: Consumer(
                       builder: (_, ref, child) {
+                        final connectionStatus =
+                            ref.watch(internetConnectionStatusProvider);
+
                         final isLoading = ref.watch(loadingNotifierProvider);
                         return ElevatedButton(
                           style: ButtonStyle(
@@ -152,46 +156,67 @@ class LoginPage extends StatelessWidget {
                                   .read(loadingNotifierProvider.notifier)
                                   .changeTheLoadingStatus(isLoading: true);
 
-                              ref
-                                  .watch(loginStep1PayloadProvider.notifier)
-                                  .state = loginStep1Payload;
+                              if (connectionStatus.value == true) {
+                                ref
+                                    .watch(loginStep1PayloadProvider.notifier)
+                                    .state = loginStep1Payload;
 
-                              final step1Response =
-                                  await ref.watch(loginStep1Provider.future);
+                                final step1Response =
+                                    await ref.watch(loginStep1Provider.future);
 
-                              ref
-                                  .read(loadingNotifierProvider.notifier)
-                                  .changeTheLoadingStatus(isLoading: false);
+                                ref
+                                    .read(loadingNotifierProvider.notifier)
+                                    .changeTheLoadingStatus(isLoading: false);
 
-                              if (step1Response.requestStatus ==
-                                  RequestStatus.success) {
-                                int? step2Id = step1Response.step2Id;
-                                if (context.mounted && step2Id != null) {
-                                  ref.watch(step2IdProvider.notifier).state =
-                                      step2Id;
+                                if (step1Response.requestStatus ==
+                                    RequestStatus.success) {
+                                  int? step2Id = step1Response.step2Id;
+                                  if (context.mounted && step2Id != null) {
+                                    ref.watch(step2IdProvider.notifier).state =
+                                        step2Id;
 
-                                  ref.watch(mobileNoProvider.notifier).state =
-                                      mobileController.text;
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          const LoginOtpVerificationPage(),
-                                    ),
-                                  );
+                                    ref.watch(mobileNoProvider.notifier).state =
+                                        mobileController.text;
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const LoginOtpVerificationPage(),
+                                      ),
+                                    );
+                                  }
+                                } else {
+                                  if (context.mounted) {
+                                    UIServices.showSnackBar(
+                                      context: context,
+                                      icon: SnackBarWidgets.errorIconSnackBar(),
+                                      text: SnackBarWidgets.errorTextSnackBar(
+                                        content: step1Response.errorMessage ??
+                                            "Something went to wrong!",
+                                      ),
+                                    );
+                                  }
+                                  devtools.log(
+                                      "${ConstantsLog.fromLoginPage} ${step1Response.errorMessage}");
                                 }
                               } else {
-                                if (context.mounted) {
-                                  UIServices.showSnackBar(
-                                    context: context,
-                                    icon: SnackBarWidgets.errorIconSnackBar(),
-                                    text: SnackBarWidgets.errorTextSnackBar(
-                                      content: step1Response.errorMessage ??
-                                          "Something went to wrong!",
-                                    ),
-                                  );
-                                }
-                                devtools.log(
-                                    "${ConstantsLog.fromLoginPage} ${step1Response.errorMessage}");
+                                Future.delayed(
+                                  const Duration(milliseconds: 200),
+                                  () {
+                                    ref
+                                        .read(loadingNotifierProvider.notifier)
+                                        .changeTheLoadingStatus(
+                                            isLoading: false);
+
+                                    UIServices.showSnackBar(
+                                      context: context,
+                                      icon: SnackBarWidgets.errorIconSnackBar(),
+                                      text: SnackBarWidgets.errorTextSnackBar(
+                                        content:
+                                            "You are offline. Please connect to the internet",
+                                      ),
+                                    );
+                                  },
+                                );
                               }
                             }
                           },
@@ -224,7 +249,7 @@ class LoginPage extends StatelessWidget {
                       );
                     },
                     child: Text(
-                      "Haven't Account? Login",
+                      "Haven't Account? Create one",
                       style: GoogleFonts.ubuntu(
                         fontSize: 14,
                         color: const Color(0xffA1A1A1),

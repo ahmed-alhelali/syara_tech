@@ -1,6 +1,8 @@
 class ConstantsLog {
   //error
   static const String fromAppConfig = 'init-app [From app config] -';
+  static const String internetConnection =
+      'Internet Connection [From internetConnectionStatusProvider] -';
 
   static const String errorFromLoginStep1 = 'Error [From login step-1] -';
   static const String errorFromLoginStep2 = 'Error [From login step-2] -';
@@ -20,7 +22,6 @@ class ConstantsLog {
   static const String errorFromVendorsListFetching =
       'Error [From vendors list fetching] -';
 
-
   static const String errorFromModelsListFetching =
       'Error [From models list fetching] -';
 
@@ -32,14 +33,14 @@ class ConstantsLog {
 
   static const String errorFromCylindersListFetching =
       'Error [From cylinders count fetching] -';
+
   //responses
   static const String registrationResponseStep1 =
       'Response [Registration step-1] -';
   static const String registrationResponseStep2 =
       'Response [Registration step-2] -';
 
-  static const String addCarResponse =
-      'Response [Add car] -';
+  static const String addCarResponse = 'Response [Add car] -';
 
   static const String loginResponseStep1 = 'Response [Login step-1] -';
   static const String loginResponseStep2 = 'Response [Login Step-2] -';
@@ -50,7 +51,8 @@ class ConstantsLog {
   static const String fetchingModelsResponse = 'Response [Fetching models] -';
   static const String fetchingColorsResponse = 'Response [Fetching colors] -';
   static const String fetchingFuelsResponse = 'Response [Fetching fuels] -';
-  static const String fetchingCylindersResponse = 'Response [Fetching cylinders] -';
+  static const String fetchingCylindersResponse =
+      'Response [Fetching cylinders] -';
 
   //providers
   static const String fromProfileProvider = 'Value [From profile provider] -';

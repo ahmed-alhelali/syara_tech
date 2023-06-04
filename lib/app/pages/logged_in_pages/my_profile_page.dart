@@ -9,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:sayara_tech_app/app/constants/constants_log.dart';
 import 'package:sayara_tech_app/app/extensions/extensions.dart';
 import 'package:sayara_tech_app/app/pages/unlogged_in_pages/login_page.dart';
+import 'package:sayara_tech_app/app/providers/internet_connection_provider.dart';
 import 'package:sayara_tech_app/app/providers/loading_notifier_provider.dart';
 import 'package:sayara_tech_app/app/service/providers_services.dart';
 import 'package:sayara_tech_app/app/service/ui_services.dart';
@@ -18,6 +19,7 @@ import 'package:sayara_tech_app/app/state/profile/providers/fetch_profile_provid
 import 'dart:developer' as devtools;
 
 import 'package:sayara_tech_app/app/state/providers/user_token_provider.dart';
+import 'package:sayara_tech_app/app/widgets/snack_bar_widgets.dart';
 
 class MyProfilePage extends ConsumerWidget {
   const MyProfilePage({Key? key}) : super(key: key);
@@ -302,34 +304,76 @@ class MyProfilePage extends ConsumerWidget {
                       ),
                     ),
                     const Gap(24),
-                    SizedBox(
-                      width: size.width,
-                      height: 45,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: ElevatedButton(
-                          style: ButtonStyle(
-                            backgroundColor: MaterialStateProperty.all<Color>(
-                              Colors.teal.shade200,
+                    Consumer(
+                      builder: (context, ref, child) {
+                        final connectionStatus =
+                        ref.watch(internetConnectionStatusProvider);
+                        final isLoading = ref.watch(loadingNotifierProvider);
+
+                        return SizedBox(
+                          width: size.width,
+                          height: 45,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: ElevatedButton(
+                              style: ButtonStyle(
+                                backgroundColor: MaterialStateProperty.all<Color>(
+                                  Colors.teal.shade200,
+                                ),
+                              ),
+                              onPressed: () {
+                                ref
+                                    .read(loadingNotifierProvider.notifier)
+                                    .changeTheLoadingStatus(isLoading: true);
+
+                                if (connectionStatus.value == true) {
+                                  ref
+                                      .read(loadingNotifierProvider.notifier)
+                                      .changeTheLoadingStatus(isLoading: false);
+                                  ProvidersServices
+                                      .refreshAutoDisposeFutureProvider(
+                                    ref: ref,
+                                    provider: fetchProfileProvider,
+                                    providerName: "fetchProfileProvider",
+                                    fromPage: ConstantsLog.fromCarsPage,
+                                  );
+                                } else {
+                                  Future.delayed(
+                                    const Duration(milliseconds: 200),
+                                        () {
+                                      ref
+                                          .read(loadingNotifierProvider.notifier)
+                                          .changeTheLoadingStatus(
+                                          isLoading: false);
+
+                                      UIServices.showSnackBar(
+                                        context: context,
+                                        icon: SnackBarWidgets.errorIconSnackBar(),
+                                        text: SnackBarWidgets.errorTextSnackBar(
+                                          content:
+                                          "You are offline. Please connect to the internet",
+                                        ),
+                                      );
+                                    },
+                                  );
+                                }
+                              },
+                              child: isLoading
+                                  ? const SpinKitThreeBounce(
+                                color: Colors.white,
+                                size: 23.0,
+                              )
+                                  : Text(
+                                'Try Again!',
+                                style: GoogleFonts.ubuntu(
+                                  fontSize: 18,
+                                  color: Colors.white,
+                                ),
+                              ),
                             ),
                           ),
-                          onPressed: () {
-                            ProvidersServices.refreshAutoDisposeFutureProvider(
-                              ref: ref,
-                              provider: fetchProfileProvider,
-                              providerName: "fetchProfileProvider",
-                              fromPage: ConstantsLog.fromProfilePage,
-                            );
-                          },
-                          child: Text(
-                            'Try Again!',
-                            style: GoogleFonts.ubuntu(
-                              fontSize: 18,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -362,34 +406,76 @@ class MyProfilePage extends ConsumerWidget {
                   ),
                 ),
                 const Gap(24),
-                SizedBox(
-                  width: size.width,
-                  height: 45,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: ElevatedButton(
-                      style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all<Color>(
-                          Colors.teal.shade200,
+                Consumer(
+                  builder: (context, ref, child) {
+                    final connectionStatus =
+                    ref.watch(internetConnectionStatusProvider);
+                    final isLoading = ref.watch(loadingNotifierProvider);
+
+                    return SizedBox(
+                      width: size.width,
+                      height: 45,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: ElevatedButton(
+                          style: ButtonStyle(
+                            backgroundColor: MaterialStateProperty.all<Color>(
+                              Colors.teal.shade200,
+                            ),
+                          ),
+                          onPressed: () {
+                            ref
+                                .read(loadingNotifierProvider.notifier)
+                                .changeTheLoadingStatus(isLoading: true);
+
+                            if (connectionStatus.value == true) {
+                              ref
+                                  .read(loadingNotifierProvider.notifier)
+                                  .changeTheLoadingStatus(isLoading: false);
+                              ProvidersServices
+                                  .refreshAutoDisposeFutureProvider(
+                                ref: ref,
+                                provider: fetchProfileProvider,
+                                providerName: "fetchProfileProvider",
+                                fromPage: ConstantsLog.fromCarsPage,
+                              );
+                            } else {
+                              Future.delayed(
+                                const Duration(milliseconds: 200),
+                                    () {
+                                  ref
+                                      .read(loadingNotifierProvider.notifier)
+                                      .changeTheLoadingStatus(
+                                      isLoading: false);
+
+                                  UIServices.showSnackBar(
+                                    context: context,
+                                    icon: SnackBarWidgets.errorIconSnackBar(),
+                                    text: SnackBarWidgets.errorTextSnackBar(
+                                      content:
+                                      "You are offline. Please connect to the internet",
+                                    ),
+                                  );
+                                },
+                              );
+                            }
+                          },
+                          child: isLoading
+                              ? const SpinKitThreeBounce(
+                            color: Colors.white,
+                            size: 23.0,
+                          )
+                              : Text(
+                            'Try Again!',
+                            style: GoogleFonts.ubuntu(
+                              fontSize: 18,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
                       ),
-                      onPressed: () {
-                        ProvidersServices.refreshAutoDisposeFutureProvider(
-                          ref: ref,
-                          provider: fetchProfileProvider,
-                          providerName: "fetchProfileProvider",
-                          fromPage: ConstantsLog.fromProfilePage,
-                        );
-                      },
-                      child: Text(
-                        'Try Again!',
-                        style: GoogleFonts.ubuntu(
-                          fontSize: 18,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
+                    );
+                  },
                 ),
               ],
             ),

@@ -94,7 +94,8 @@ class Authenticator {
           return RegistrationStep2Result.success(userToken.toString());
         } else {
           final errorMessage = response.data[ApiFieldName.message];
-          devtools.log("${ConstantsLog.errorFromRegistrationStep2} $errorMessage");
+          devtools
+              .log("${ConstantsLog.errorFromRegistrationStep2} $errorMessage");
           return RegistrationStep2Result.failure(errorMessage);
         }
       } else {
@@ -144,7 +145,9 @@ class Authenticator {
         return LoginStep1Result.failure(error);
       }
     } catch (e) {
-      devtools.log("${ConstantsLog.errorFromLoginStep1} The entire request fills");
+      devtools.log("error $e");
+      devtools
+          .log("${ConstantsLog.errorFromLoginStep1} The entire request fills");
     }
     return LoginStep1Result.failure(ErrorResponseMessages.tryAgainError);
   }
@@ -184,7 +187,8 @@ class Authenticator {
         return LoginStep2Result.failure(error);
       }
     } catch (error) {
-      devtools.log("${ConstantsLog.errorFromLoginStep2} The entire request fills : error => $error");
+      devtools.log(
+          "${ConstantsLog.errorFromLoginStep2} The entire request fills : error => $error");
     }
     return LoginStep2Result.failure(ErrorResponseMessages.tryAgainError);
   }

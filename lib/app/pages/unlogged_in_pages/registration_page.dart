@@ -5,6 +5,7 @@ import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sayara_tech_app/app/constants/constants_assets.dart';
 import 'package:sayara_tech_app/app/constants/constants_log.dart';
+import 'package:sayara_tech_app/app/providers/internet_connection_provider.dart';
 import 'package:sayara_tech_app/app/providers/loading_notifier_provider.dart';
 import 'package:sayara_tech_app/app/providers/onscure_notifier_provider.dart';
 import 'package:sayara_tech_app/app/service/ui_services.dart';
@@ -17,10 +18,9 @@ import 'package:sayara_tech_app/app/pages/unlogged_in_pages/registration_otp_pag
 import 'dart:developer' as devtools;
 import 'package:sayara_tech_app/app/widgets/snack_bar_widgets.dart';
 import 'package:sayara_tech_app/app/state/auth/providers/shared_providers.dart';
-import 'package:sayara_tech_app/app/state/providers/user_token_provider.dart';
 import 'package:sayara_tech_app/app/pages/unlogged_in_pages/login_page.dart';
 
-class RegistrationPage extends StatelessWidget {
+class RegistrationPage extends ConsumerWidget {
   RegistrationPage({super.key});
 
   final nameController = TextEditingController();
@@ -35,7 +35,7 @@ class RegistrationPage extends StatelessWidget {
   final mobileFocusNode = FocusNode();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final size = UIServices.getSize(context);
 
     return Scaffold(
@@ -313,6 +313,10 @@ class RegistrationPage extends StatelessWidget {
                     child: Consumer(
                       builder: (_, ref, child) {
                         final isLoading = ref.watch(loadingNotifierProvider);
+
+                        final connectionStatus =
+                            ref.watch(internetConnectionStatusProvider);
+
                         return ElevatedButton(
                           style: ButtonStyle(
                             backgroundColor: MaterialStateProperty.all<Color>(
@@ -320,7 +324,6 @@ class RegistrationPage extends StatelessWidget {
                             ),
                           ),
                           onPressed: () async {
-
                             UIServices.unFocusAll([
                               nameFocusNode,
                               emailFocusNode,
@@ -337,50 +340,69 @@ class RegistrationPage extends StatelessWidget {
                                 email: emailController.text,
                                 mobile: mobileController.text,
                               );
-
                               ref
                                   .read(loadingNotifierProvider.notifier)
                                   .changeTheLoadingStatus(isLoading: true);
+                              if (connectionStatus.value == true) {
+                                ref
+                                    .watch(registrationStep1PayloadProvider
+                                        .notifier)
+                                    .state = registrationStep1Payload;
 
-                              ref
-                                  .watch(
-                                      registrationStep1PayloadProvider.notifier)
-                                  .state = registrationStep1Payload;
+                                final step1Response = await ref
+                                    .watch(registrationStep1Provider.future);
 
-                              final step1Response = await ref
-                                  .watch(registrationStep1Provider.future);
+                                ref
+                                    .read(loadingNotifierProvider.notifier)
+                                    .changeTheLoadingStatus(isLoading: false);
 
-                              ref
-                                  .read(loadingNotifierProvider.notifier)
-                                  .changeTheLoadingStatus(isLoading: false);
+                                if (step1Response.requestStatus ==
+                                    RequestStatus.success) {
+                                  int? step2Id = step1Response.step2Id;
 
-                              if (step1Response.requestStatus ==
-                                  RequestStatus.success) {
-                                int? step2Id = step1Response.step2Id;
-
-                                if (context.mounted && step2Id != null) {
-                                  ref.watch(step2IdProvider.notifier).state =
-                                      step2Id;
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          const RegistrationOtpVerificationPage(),
-                                    ),
-                                  );
+                                  if (context.mounted && step2Id != null) {
+                                    ref.watch(step2IdProvider.notifier).state =
+                                        step2Id;
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const RegistrationOtpVerificationPage(),
+                                      ),
+                                    );
+                                  }
+                                } else {
+                                  if (context.mounted) {
+                                    UIServices.showSnackBar(
+                                      context: context,
+                                      icon: SnackBarWidgets.errorIconSnackBar(),
+                                      text: SnackBarWidgets.errorTextSnackBar(
+                                        content: step1Response.errorMessage ??
+                                            "Something went to wrong!",
+                                      ),
+                                    );
+                                  }
+                                  devtools.log(
+                                      "${ConstantsLog.fromRegistrationPage} ${step1Response.errorMessage}");
                                 }
                               } else {
-                                if (context.mounted) {
-                                  UIServices.showSnackBar(
-                                    context: context,
-                                    icon: SnackBarWidgets.errorIconSnackBar(),
-                                    text: SnackBarWidgets.errorTextSnackBar(
-                                      content: step1Response.errorMessage ??
-                                          "Something went to wrong!",
-                                    ),
-                                  );
-                                }
-                                devtools
-                                    .log("${ConstantsLog.fromRegistrationPage} ${step1Response.errorMessage}");
+                                Future.delayed(
+                                  const Duration(milliseconds: 200),
+                                  () {
+                                    ref
+                                        .read(loadingNotifierProvider.notifier)
+                                        .changeTheLoadingStatus(
+                                            isLoading: false);
+
+                                    UIServices.showSnackBar(
+                                      context: context,
+                                      icon: SnackBarWidgets.errorIconSnackBar(),
+                                      text: SnackBarWidgets.errorTextSnackBar(
+                                        content:
+                                            "You are offline. Please connect to the internet",
+                                      ),
+                                    );
+                                  },
+                                );
                               }
                             }
                           },
